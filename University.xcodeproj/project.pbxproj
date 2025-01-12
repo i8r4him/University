@@ -102,6 +102,11 @@
 			path = CreditWidget;
 			sourceTree = "<group>";
 		};
+		83DF2DF62D3408B800C38796 /* Screenshots */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Screenshots;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +139,7 @@
 		835FAD382D0CFFB800FFEDD6 = {
 			isa = PBXGroup;
 			children = (
+				83DF2DF62D3408B800C38796 /* Screenshots */,
 				835FAD432D0CFFB800FFEDD6 /* University */,
 				83BA5A632D13ACEE00EBE44D /* CreditWidget */,
 				833C6FD12D14D64700EDFDEE /* AppleWatchUniversity Watch App */,
@@ -204,6 +210,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				835FAD432D0CFFB800FFEDD6 /* University */,
+				83DF2DF62D3408B800C38796 /* Screenshots */,
 			);
 			name = University;
 			packageProductDependencies = (
@@ -242,7 +249,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					833C6FCF2D14D64700EDFDEE = {
 						CreatedOnToolsVersion = 16.0;
@@ -405,6 +412,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -434,6 +442,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -466,6 +475,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -495,6 +505,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -522,6 +533,7 @@
 				CODE_SIGN_ENTITLEMENTS = University/University.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"University/Preview Content\"";
 				DEVELOPMENT_TEAM = DMKPB2487F;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -563,6 +575,7 @@
 				CODE_SIGN_ENTITLEMENTS = University/University.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"University/Preview Content\"";
 				DEVELOPMENT_TEAM = DMKPB2487F;
 				ENABLE_HARDENED_RUNTIME = YES;
