@@ -47,7 +47,7 @@ An iOS app designed to help students manage their studies efficiently. This app 
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/study-planner.git
+   git clone https://github.com/i8r4him/study-planner.git
 
 	2.	Open the project in Xcode.
 	3.	Build and run the app on a simulator or connected device.
