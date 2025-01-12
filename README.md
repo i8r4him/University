@@ -31,19 +31,17 @@ An iOS app designed to help students manage their studies efficiently. This app 
 ## Screenshots
 
 ### Home
-![Home Dashboard](./Assets/screenshot_1.png)
+![Home](./Screenshots/screenshot_1.png)
 
 ### Focus Timer
-![Focus Timer](./Assets/screenshot_2.png)
-![Focus Timer](./Assits/screenshot_3.png)
+![Focus Timer](./Screenshots/screenshot_2.png)
+![Focus Timer](./Screenshots/screenshot_3.png)
 
 ### Study Plan
-![Study Plan](./Assets/screenshot_4.png)
+![Study Plan](./Screenshots/screenshot_4.png)
 
 ### Progress Tracker
-![Progress Tracker](./Assets/screenshot_5.png)
-
----
+![Progress Tracker](./Screenshots/screenshot_5.png)
 
 ## Installation
 
