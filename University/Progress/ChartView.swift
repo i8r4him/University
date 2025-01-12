@@ -21,6 +21,7 @@ struct ChartView: View {
     @State private var showingRateAchievements = false
     @State private var showingFileImporter = false
     @State private var uploadedFileURL: URL?
+    @State private var showingProgressRating = false
     
     @Environment(\.dismiss) var dismiss
 
@@ -217,8 +218,7 @@ struct ChartView: View {
     // MARK: - Action Functions
     // Function to handle "Rate my achievements"
     private func rateAchievements() {
-        // Present a custom modal view to rate achievements
-        showingRateAchievements = true
+        showingProgressRating = true
     }
     
     // Function to handle "Upload a syllabus"

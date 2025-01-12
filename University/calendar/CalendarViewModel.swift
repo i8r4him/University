@@ -108,6 +108,27 @@ class CalendarViewModel: ObservableObject {
             print("Error removing event: \(error)")
         }
     }
+
+    func forceUpdateToToday() {
+        let today = Date()
+        let calendar = Calendar.current
+        
+        withAnimation {
+            // First update currentWeekStart to ensure proper week alignment
+            if let newWeekStart = calendar.startOfWeek(for: today) {
+                currentWeekStart = newWeekStart
+            }
+            
+            // Then update selectedDate after week is aligned
+            selectedDate = today
+        }
+    }
+
+    func fetchEvents(for date: Date) -> [Event] {
+        // Pre-fetch events for the current week
+        // Implement logic to fetch events for the current week
+        return []
+    }
 }
 
 // Helper to find startOfWeek:

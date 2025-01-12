@@ -15,6 +15,9 @@ struct CalendarView: View {
     @State private var showAddEvent = false
     @State private var editedEvent: Event? = nil
     @State private var selectedEventType: EventType = .lecture
+    @State private var forceRefresh: Bool = false
+
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     // Use a stable base date (the current week's start) that never changes.
     private let baseDate: Date = {
@@ -34,78 +37,50 @@ struct CalendarView: View {
 
     var body: some View {
         NavigationStack {
-            // Header and date info...
-            HStack(alignment: .top) {
-                Text(viewModel.selectedDate.weekdaySymbol)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Circle()
-                    .fill(Color.red)
-                    .frame(width: 8, height: 8)
-                    .offset(y: 19)
-                
-                Spacer()
-                
-                VStack(alignment: .trailing) {
-                    Text(viewModel.selectedDate.monthDay)
-                        .font(.title2)
-                        .bold()
-                        .foregroundColor(.secondary)
-                    Text(viewModel.selectedDate.year)
-                        .font(.title2)
-                        .bold()
-                        .foregroundStyle(.gray.opacity(0.5))
-                }
-            }
-            .onTapGesture {
-                impactFeedback.impactOccurred()
-                withAnimation {
-                    // Reset to current day & current week visually
-                    viewModel.selectedDate = Date()
-                    if let startOfWeek = Calendar.current.startOfWeek(for: Date()) {
-                        viewModel.currentWeekStart = startOfWeek
-                    }
-                    // Move the pager back to the middle (current week)
-                    selectedWeekIndex = 2
-                }
-            }
-            .padding()
+            CalendarHeaderView(viewModel: viewModel, selectedWeekIndex: $selectedWeekIndex)
             
-            weekPagerSection
+            WeekPagerView(viewModel: viewModel, selectedWeekIndex: $selectedWeekIndex, weeks: weeks)
                 .padding(.vertical, -25)
                 .onAppear {
-                    viewModel.selectedDate = Date()
-                    if let startOfWeek = Calendar.current.startOfWeek(for: Date()) {
-                        viewModel.currentWeekStart = startOfWeek
-                    }
+                    let today = Date()
                     selectedWeekIndex = 2
-                }
-                .onChange(of: selectedWeekIndex) { oldIndex,newIndex in
-                    if weeks.indices.contains(newIndex) {
-                        let newWeekStart = weeks[newIndex]
-                        // Update the model to the new week.
-                        // This does not change 'weeks' because 'weeks' is fixed.
-                        viewModel.currentWeekStart = newWeekStart
-                        viewModel.selectedDate = newWeekStart
+                    viewModel.selectedDate = today
+                    if let startOfWeek = Calendar.current.startOfWeek(for: today) {
+                        viewModel.currentWeekStart = startOfWeek
                     }
                 }
 
-            // List with morning, day, night sections...
-            List {
-                VStack(alignment: .leading, spacing: 15) {
-                    morningSection
-                    Divider()
-                    daySection
-                    Divider()
-                    nightSection
+            GeometryReader { geometry in
+                let screenHeight = geometry.size.height
+                let sectionHeight = screenHeight / 3 // Divide screen into three equal parts
+                
+                List {
+                    VStack(alignment: .leading, spacing: 15) {
+                        EventSectionView(title: "Morning", systemImage: "sunrise.fill",
+                            events: eventsForTimeRange(startHour: 0, endHour: 11), onEdit: { editedEvent = $0 },
+                            onDelete: { viewModel.removeEvent($0) })
+                            .frame(height: sectionHeight)
+                        
+                        Divider()
+                        
+                        EventSectionView(title: "Day", systemImage: "sun.max.fill",
+                            events: eventsForTimeRange(startHour: 12, endHour: 17), onEdit: { editedEvent = $0 },
+                            onDelete: { viewModel.removeEvent($0) })
+                            .frame(height: sectionHeight)
+                        
+                        Divider()
+                        
+                        EventSectionView(title: "Night", systemImage: "moon.stars.fill",
+                            events: eventsForTimeRange(startHour: 18, endHour: 23), onEdit: { editedEvent = $0 },
+                            onDelete: { viewModel.removeEvent($0) })
+                            .frame(height: sectionHeight)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 20)
+                    .listRowSeparator(.hidden)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 20)
-                .listRowSeparator(.hidden)
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
             
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -165,15 +140,12 @@ struct CalendarView: View {
         }
     }
 
-    private var weekPagerSection: some View {
-        TabView(selection: $selectedWeekIndex) {
-            ForEach(Array(weeks.enumerated()), id: \.offset) { index, startOfWeek in
-                weekView(for: startOfWeek)
-                    .tag(index)
-            }
+    private func eventsForTimeRange(startHour: Int, endHour: Int) -> [Event] {
+        let calendar = Calendar.current
+        return viewModel.eventsForSelectedDate.filter { event in
+            let hour = calendar.component(.hour, from: event.startDate)
+            return hour >= startHour && hour <= endHour
         }
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .frame(height: 100)
     }
 
     private func weekView(for startOfWeek: Date) -> some View {
@@ -203,121 +175,43 @@ struct CalendarView: View {
         .padding()
     }
 
-    // MARK: - Event Sections
-    var morningEvents: [Event] {
-        eventsForTimeRange(startHour: 0, endHour: 11)
-    }
-    var dayEvents: [Event] {
-        eventsForTimeRange(startHour: 12, endHour: 17)
-    }
-    var nightEvents: [Event] {
-        eventsForTimeRange(startHour: 18, endHour: 23)
-    }
-
-    private func eventsForTimeRange(startHour: Int, endHour: Int) -> [Event] {
-        let calendar = Calendar.current
-        return viewModel.eventsForSelectedDate.filter { event in
-            let hour = calendar.component(.hour, from: event.startDate)
-            return hour >= startHour && hour <= endHour
-        }
-    }
-
-    private var morningSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "sunrise.fill")
-                    .symbolRenderingMode(.hierarchical)
-                    .font(.title3)
-                Text("Morning")
-                    .font(.title3)
+    private var headerSection: some View {
+        HStack(alignment: .top) {
+            Text(viewModel.selectedDate.weekdaySymbol)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+            
+            Circle()
+                .fill(Color.red)
+                .frame(width: 8, height: 8)
+                .offset(y: 19)
+            
+            Spacer()
+            
+            VStack(alignment: .trailing) {
+                Text(viewModel.selectedDate.monthDay)
+                    .font(.title2)
                     .bold()
+                    .foregroundColor(.secondary)
+                Text(viewModel.selectedDate.year)
+                    .font(.title2)
+                    .bold()
+                    .foregroundStyle(.gray.opacity(0.5))
             }
-            .padding()
-
-            if morningEvents.isEmpty {
-                placeholderRow("No morning events")
-            } else {
-                ForEach(morningEvents) { event in
-                    EventRowView(event: event, onEdit: {
-                        editedEvent = event
-                    }, onDelete: {
-                        withAnimation {
-                            viewModel.removeEvent(event)
-                        }
-                    })
-                    .listRowSeparator(.hidden)
+        }
+        .onTapGesture {
+            impactFeedback.impactOccurred()
+            let today = Date()
+            withAnimation {
+                selectedWeekIndex = 2
+                viewModel.selectedDate = today
+                if let startOfWeek = Calendar.current.startOfWeek(for: today) {
+                    viewModel.currentWeekStart = startOfWeek
                 }
             }
         }
-        .listRowSeparator(.hidden)
-    }
-
-    private var daySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "sun.max.fill")
-                    .symbolRenderingMode(.hierarchical)
-                    .font(.title3)
-                Text("Day")
-                    .font(.title3)
-                    .bold()
-            }
-            .padding()
-
-            if dayEvents.isEmpty {
-                placeholderRow("No day events")
-            } else {
-                ForEach(dayEvents) { event in
-                    EventRowView(event: event, onEdit: {
-                        editedEvent = event
-                    }, onDelete: {
-                        withAnimation {
-                            viewModel.removeEvent(event)
-                        }
-                    })
-                    .listRowSeparator(.hidden)
-                }
-            }
-        }
-        .listRowSeparator(.hidden)
-    }
-
-    private var nightSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "moon.stars.fill")
-                    .symbolRenderingMode(.hierarchical)
-                    .font(.title3)
-                Text("Night")
-                    .font(.title3)
-                    .bold()
-            }
-            .padding()
-
-            if nightEvents.isEmpty {
-                placeholderRow("No night events")
-            } else {
-                ForEach(nightEvents) { event in
-                    EventRowView(event: event, onEdit: {
-                        editedEvent = event
-                    }, onDelete: {
-                        withAnimation {
-                            viewModel.removeEvent(event)
-                        }
-                    })
-                    .listRowSeparator(.hidden)
-                }
-            }
-        }
-        .listRowSeparator(.hidden)
-    }
-
-    private func placeholderRow(_ text: String) -> some View {
-        Text(text)
-            .font(.callout)
-            .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .frame(height: 100)
+        .padding()
     }
 }
 

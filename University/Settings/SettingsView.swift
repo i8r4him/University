@@ -76,19 +76,19 @@ struct SettingsView: View {
                 
                 // SECTION: Appearance
                 Section(header: Text("Appearance")) {
-                    Picker("Apperance", selection: $selectedLightDarkOrSystem) {
+                    Picker("Apperance", systemImage: "paintpalette.fill", selection: $selectedLightDarkOrSystem) {
                         ForEach(LightDarkOrSystem.allCases) { option in
                             Text(option.rawValue).tag(option)
                         }
                     }
-                    .pickerStyle(.navigationLink)
+                    .pickerStyle(.menu)
                     
                     Picker("Main Color", selection: $selectedColorScheme) {
                         ForEach(ColorSchemeOption.allCases) { option in
                             Text(option.rawValue).tag(option)
                         }
                     }
-                    .pickerStyle(.navigationLink)
+                    .pickerStyle(.menu)
                 }
                 
                 // SECTION: Import Data

@@ -68,50 +68,19 @@ struct EventRowView: View {
     }
 }
 
-struct EventRowView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            // Lecture Event in Light Mode
-            EventRowView(
-                event: Event(
-                    id: UUID(),
-                    title: "Calculus Lecture",
-                    type: .lecture,
-                    location: "Room 101",
-                    notes: "Bring textbook and notebook",
-                    isAllDay: false,
-                    startDate: Date(),
-                    endDate: Calendar.current.date(byAdding: .hour, value: 2, to: Date())!,
-                    repeatOption: .none,
-                    repeatSlots: nil,
-                    color: .blue
-                ),
-                onEdit: {},
-                onDelete: {}
-            )
-            .previewDisplayName("Lecture Event - Light Mode")
-            
-            // Lecture Event in Dark Mode
-            EventRowView(
-                event: Event(
-                    id: UUID(),
-                    title: "Calculus Lecture",
-                    type: .lecture,
-                    location: "Room 101",
-                    notes: "Bring textbook and notebook",
-                    isAllDay: false,
-                    startDate: Date(),
-                    endDate: Calendar.current.date(byAdding: .hour, value: 2, to: Date())!,
-                    repeatOption: .none,
-                    repeatSlots: nil,
-                    color: .blue
-                ),
-                onEdit: {},
-                onDelete: {}
-            )
-            .previewDisplayName("Lecture Event - Dark Mode")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding()
-    }
+#Preview {
+    EventRowView(event: Event(
+        id: UUID(),
+        title: "Calculus Lecture",
+        type: .lecture,
+        location: "Room 101",
+        notes: "Bring textbook and notebook",
+        isAllDay: false,
+        startDate: Date(),
+        endDate: Calendar.current.date(byAdding: .hour, value: 2, to: Date())!,
+        repeatOption: .none,
+        repeatSlots: nil,
+        color: .blue
+    ), onEdit: {}, onDelete: {})
+    .padding()
 }

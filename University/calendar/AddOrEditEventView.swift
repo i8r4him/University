@@ -27,12 +27,6 @@ struct AddOrEditEventView: View {
             Form {
                 Section(header: Text("Event Details")) {
                     TextField("Title", text: $title)
-                    Picker("Type", selection: $selectedType) {
-                        Text("Lecture").tag(EventType.lecture)
-                        Text("Exam").tag(EventType.exam)
-                        Text("Homework").tag(EventType.homework)
-                        Text("Task").tag(EventType.task)
-                    }
                     TextField("Location", text: $location)
                     TextField("Notes", text: $notes)
                     Toggle("All Day", isOn: $isAllDay)
@@ -55,7 +49,7 @@ struct AddOrEditEventView: View {
                         let newEvent = Event(
                             id: event?.id ?? UUID(),
                             title: title,
-                            type: selectedType,
+                            type: .lecture,
                             location: location.isEmpty ? nil : location,
                             notes: notes.isEmpty ? nil : notes,
                             isAllDay: isAllDay,

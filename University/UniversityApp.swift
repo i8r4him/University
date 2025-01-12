@@ -10,11 +10,11 @@ import UserNotifications
 
 @main
 struct UniversityApp: App {
-    @StateObject var stopwatchManager = StopwatchManager()
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(stopwatchManager)
+            RootView {
+                ContentView()
+            }
         }
     }
 }
