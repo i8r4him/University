@@ -7,14 +7,14 @@
 
 import SwiftUI
 import UserNotifications
+import CoreData
 
 @main
 struct UniversityApp: App {
     var body: some Scene {
         WindowGroup {
-            RootView {
-                ContentView()
-            }
+            ContentView()
         }
+        .environment(\.managedObjectContext, PersistenceController.shared.viewContext)
     }
 }

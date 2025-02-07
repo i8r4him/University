@@ -11,7 +11,6 @@ import CoreData
 struct CalendarView: View {
     
     @ObservedObject var viewModel = CalendarViewModel()
-    @State private var showSheet = false
     @State private var showAddEvent = false
     @State private var editedEvent: Event? = nil
     @State private var selectedEventType: EventType = .lecture
@@ -24,7 +23,6 @@ struct CalendarView: View {
         Calendar.current.startOfWeek(for: Date()) ?? Date()
     }()
     
-    // weeks is derived from a stable base date, not the viewModel.
     var weeks: [Date] {
         let cal = Calendar.current
         return (-2...2).compactMap { offset in
@@ -85,56 +83,26 @@ struct CalendarView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 20) {
-                        Button(action: {
-                            editedEvent = nil
-                            showAddEvent = true
-                        }) {
-                            Image(systemName: "calendar")
-                                .foregroundColor(Color.accentColor)
-                        }
-                        .sheet(item: $editedEvent) { event in
-                            AddOrEditEventView(event: event) { updatedEvent in
-                                viewModel.updateEvent(updatedEvent)
-                            }
-                        }
-                        .sheet(isPresented: $showAddEvent) {
-                            AddOrEditEventView { newEvent in
-                                viewModel.addEvent(newEvent)
-                            }
-                        }
-
                         Menu {
-                            Button {
-                                showSheet = true
-                            } label: {
-                                Label("Lecture", systemImage: "inset.filled.rectangle.and.person.filled")
-                            }
-                            
-                            Button {
-                                // Add Exam event code
-                            } label: {
-                                Label("Exam date", systemImage: "pencil.and.list.clipboard")
-                            }
-                            Button {
-                                // Add Homework event code
-                            } label: {
-                                Label("Homework", systemImage: "pencil.and.ruler")
-                            }
-                            Button {
-                                // Add Task event code
-                            } label: {
-                                Label("Task", systemImage: "checklist")
+                            ForEach(EventType.allCases) { eventType in
+                                Button {
+                                    selectedEventType = eventType
+                                    showAddEvent = true
+                                } label: {
+                                    Label(eventType.rawValue, systemImage: iconForEventType(eventType))
+                                }
                             }
                         } label: {
                             Label("Add New", systemImage: "plus")
                         }
-                        .sheet(isPresented: $showSheet) {
-                            AddEventSheetView(eventType: selectedEventType)
-                                .presentationCornerRadius(10)
-                                //.presentationDetents([.height(260)])
-                                .presentationDragIndicator(.hidden)
-                        }
                     }
+                }
+            }
+            .sheet(isPresented: $showAddEvent) {
+                AddOrEditEventView(event: nil) { newEvent in
+                    var event = newEvent
+                    event.type = selectedEventType
+                    viewModel.addEvent(event)
                 }
             }
         }
@@ -212,6 +180,19 @@ struct CalendarView: View {
             }
         }
         .padding()
+    }
+
+    private func iconForEventType(_ type: EventType) -> String {
+        switch type {
+        case .lecture:
+            return "inset.filled.rectangle.and.person.filled"
+        case .exam:
+            return "pencil.and.list.clipboard"
+        case .homework:
+            return "pencil.and.ruler"
+        case .task:
+            return "checklist"
+        }
     }
 }
 

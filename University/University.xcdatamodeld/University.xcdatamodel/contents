@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23231" systemVersion="24C101" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24C101" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="EventEntity" representedClassName="EventEntity" syncable="YES" codeGenerationType="class">
         <attribute name="colorHex" optional="YES" attributeType="String"/>
         <attribute name="endDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -10,6 +10,15 @@
         <attribute name="repeatOption" optional="YES" attributeType="String"/>
         <attribute name="startDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="FocusSession" representedClassName="FocusSession" syncable="YES" codeGenerationType="class">
+        <attribute name="completed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="duration" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="endTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="focusType" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="startTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="type" optional="YES" attributeType="String"/>
     </entity>
     <entity name="SubjectEntity" representedClassName="SubjectEntity" syncable="YES" codeGenerationType="class">

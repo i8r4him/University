@@ -1,4 +1,4 @@
-// New file: CalendarHeaderView.swift
+
 import SwiftUI
 
 struct CalendarHeaderView: View {

@@ -22,6 +22,12 @@ struct ContentView: View {
     // State for hiding the mini timer
     @State private var hideMiniTimer: Bool = false
     
+    // Add property for sidebar collapse state
+    @State private var isSidebarCollapsed = false
+    
+    // Add property for active tab highlight
+    @State private var activeTabColor = Color.accentColor.opacity(0.1)
+    
     enum Tabs: String {
         case home, studyPlan, focus, progress, store, settings, home1, productivity, utilites, store1
         
@@ -38,58 +44,31 @@ struct ContentView: View {
             .customizationBehavior(.disabled, for: .sidebar, .tabBar)
 
 
-            TabSection("Utilites") {
-                Tab("Study Plan", systemImage: "calendar", value: Tabs.studyPlan) {
+            TabSection("Utilities") {
+                Tab("Study Plan", systemImage: "calendar.badge.clock", value: Tabs.studyPlan) {
                     CalendarView(viewModel: calendarViewModel)
                 }
-                //.customizationBehavior(.reorderable, for: .sidebar, .tabBar)
+               
                 .customizationID(Tabs.studyPlan.customizationID)
-                
-                
-                Tab("Focus", systemImage: "timer", value: Tabs.focus) {
-                    NavigationStack {
-                        VStack(spacing: 15) {
-                            Text("Focus Timer Example")
-                                .font(.title2)
-                            
-                            // Start button
-                            Button("Start 25-Minute Timer") {
-                                withAnimation(.snappy) {
-                                    isRunning = true
-                                    showMiniTimer = true
-                                }
-                            }
-                        }
-                        .navigationTitle("Home")
-                    }
+                /*
+                Tab("Focus", systemImage: "timer.circle.fill", value: Tabs.focus) {
+                    FocusView()
+                        .environment(\.managedObjectContext, PersistenceController.shared.viewContext)
                 }
                 .customizationID(Tabs.focus.customizationID)
+                */
             }
-            //.customizationBehavior(.reorderable, for: .sidebar, .tabBar)
             .customizationID("com.createchsol.myApp.mainSection")
             
             TabSection("Productivity") {
-                Tab("Progress", systemImage: "sparkles", value: Tabs.progress) {
+                Tab("Progress", systemImage: "chart.bar.xaxis.ascending", value: Tabs.progress) {
                     ChartView(viewModel: subjectsViewModel)
                 }
                 .customizationID(Tabs.progress.customizationID)
             }
-            //.customizationBehavior(.reorderable, for: .sidebar, .tabBar)
-            //.customizationID(Tabs.productivity.customizationID)
             
-            /*
-            TabSection("Store") {
-                Tab("Store", systemImage: "cart", value: Tabs.store) {
-                    StoreView()
-                }
-                .customizationID(Tabs.store.customizationID)
-            }
-            //.customizationBehavior(.reorderable, for: .sidebar, .tabBar)
-            .customizationID(Tabs.store1.customizationID)
-            
-            */
             Tab("Settings", systemImage: "gearshape", value: .settings) {
-                SettingsView()
+                SettingsView(viewModel: SettingsViewModel())
             }
             .customizationID(Tabs.settings.customizationID)
              
@@ -98,31 +77,44 @@ struct ContentView: View {
         .tabViewStyle(.sidebarAdaptable)
         .tabViewCustomization($customization)
             .tabViewSidebarHeader {
-                Text("Notiva")
-                    .font(.title)
-                    .bold()
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Notiva")
+                            .font(.largeTitle)
+                            .bold()
+                        
+                        Spacer()
+                        
+                        Button(action: { isSidebarCollapsed.toggle() }) {
+                            Image(systemName: "sidebar.left")
+                                .rotationEffect(.degrees(isSidebarCollapsed ? 180 : 0))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    
+                    Text("Study Better")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .tabViewSidebarBottomBar {
-                Label("Enjoy your App", systemImage: "app.gift")
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
-                    .foregroundStyle(Color.accentColor)
+                VStack(spacing: 8) {
+                    Divider()
+                    Label("Keep Learning!", systemImage: "lightbulb.fill")
+                        .font(.footnote)
+                        .foregroundStyle(Color.accentColor)
+                    Text("Version 1.0")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
             }
-
-        .universalOverlay(show: $showMiniTimer) {
-            ExpandableTimerPlayer(
-                show: $showMiniTimer,
-                hideMiniTimer: $hideMiniTimer,
-                isRunning: $isRunning,
-                selectedMinutes: userPickedMinutes
-            )
-        }
     }
 }
 
 #Preview {
-    RootView {
-        ContentView()
-    }
+    ContentView()
 }

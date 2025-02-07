@@ -45,6 +45,22 @@ struct ChartView: View {
         viewModel.subjects.reduce(0) { $0 + $1.credits }
     }
 
+    @State private var selectedType: String?
+    @State private var searchText = ""
+    
+    private var filteredSubjects: [SubjectCredit] {
+        let subjects = viewModel.subjects
+        let filteredByType = selectedType == nil ? subjects : subjects.filter { $0.type == selectedType }
+        return searchText.isEmpty ? filteredByType : filteredByType.filter { $0.subjectName.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    private var subjectTypes: [String] {
+        Array(Set(viewModel.subjects.map { $0.type })).sorted()
+    }
+
+    @State private var showingDeleteConfirmation = false
+    @State private var subjectToDelete: SubjectCredit?
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -56,52 +72,11 @@ struct ChartView: View {
             }
             .navigationTitle("Progress")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if !viewModel.major.isEmpty && viewModel.targetCredits > 0 {
-                        Button(action: {
-                            viewModel.graphType = viewModel.graphType.next
-                        }) {
-                            Image(systemName: viewModel.graphType.iconName)
-                        }
-                    }
-                }
-                            
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack {
-                        if viewModel.major.isEmpty {
-                            Button(action: {
-                                showingSettings = true
-                            }) {
-                                Image(systemName: "plus")
-                            }
-                        }
-
-                        if !viewModel.major.isEmpty && viewModel.targetCredits > 0 {
-                            Button(action: {
-                                isAdding = true
-                            }) {
-                                Image(systemName: "plus")
-                            }
-                            
-                            // Updated Menu Button
-                            Menu {
-                                Button(action: {
-                                    rateAchievements()
-                                }) {
-                                    Label("Rate Progress", systemImage: "wand.and.sparkles")
-                                        .symbolRenderingMode(.hierarchical)
-                                }
-                                
-                                Button(action: {
-                                    uploadSyllabus()
-                                }) {
-                                    Label("Upload a syllabus", systemImage: "document.badge.arrow.up.fill")
-                                }
-                            } label: {
-                                Image(systemName: "sparkles")
-                            }
-                        }
-                        
+                    Button(action: {
+                        isAdding = true
+                    }) {
+                        Image(systemName: "plus")
                     }
                 }
             }
@@ -123,88 +98,189 @@ struct ChartView: View {
                     .presentationCornerRadius(15)
                     .presentationDetents([.medium])
             }
-            // File Importer Modifier
-            .fileImporter(
-                isPresented: $showingFileImporter,
-                allowedContentTypes: [.pdf, .plainText], // Adjust based on allowed types
-                allowsMultipleSelection: false
-            ) { result in
-                switch result {
-                case .success(let urls):
-                    if let url = urls.first {
-                        handleUploadedFile(url)
-                    }
-                case .failure(let error):
-                    print("File import failed: \(error.localizedDescription)")
-                }
-            }
         }
     }
     
     private var contentView: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Major: \(viewModel.major)")
-                .font(.title3)
-                .fontWeight(.medium)
-                .padding(.top)
-                .foregroundStyle(Color.secondary)
-                .padding(.horizontal)
-
-            Chart {
-                ForEach(chartData.sorted { $0.credits > $1.credits }) { subject in
-                    SectorMark(
-                        angle: .value("Credits", subject.credits),
-                        innerRadius: .ratio(viewModel.graphType == .donut ? 0.61 : 0),
-                        angularInset: viewModel.graphType == .donut ? 6 : 1
-                    )
-                    .cornerRadius(8)
-                    .foregroundStyle(subject.subjectName == "Remaining" ? Color.gray : subject.color)
-                }
-            }
-            .chartLegend(position: .bottom, alignment: .center, spacing: 25)
-            .chartYScale(domain: 0...Double(viewModel.targetCredits > 0 ? viewModel.targetCredits : 180))
-            .frame(height: 250)
-            .padding(.top, 10)
-
-            HStack {
-                Text("Completed: \(completedCredits)")
-                    .font(.subheadline)
-                    .foregroundColor(Color.accentColor)
-                Spacer()
-                Text("Remaining: \(remainingCredits)")
-                    .font(.subheadline)
-                    .foregroundColor(Color.accentColor)
-            }
-            .padding([.horizontal, .bottom])
-
-            List {
-                ForEach(viewModel.subjects) { subject in
-                    HStack(spacing: 10) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(subject.color)
-                            .frame(width: 8, height: 50)
-
-                        VStack(alignment: .leading) {
-                            Text(subject.subjectName)
-                                .font(.headline)
-                            Text("\(subject.type) • Credits: \(Int(subject.credits))")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 15) {
+                // Add a progress card
+                VStack(spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(viewModel.major)
+                                .font(.title3)
+                                .fontWeight(.medium)
+                            Text("Progress Overview")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(Color.secondary)
                         }
                         Spacer()
-                        Button {
-                            selectedSubject = subject
-                            isEditing = true
-                        } label: {
-                            Image(systemName: "pencil")
-                                .foregroundColor(.accentColor)
-                        }
-                        .buttonStyle(BorderlessButtonStyle())
+                        Text("\(Int((Double(completedCredits) / Double(viewModel.targetCredits)) * 100))%")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
-                .onDelete(perform: deleteSubject)
+                .padding()
+                .background(Color(.systemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                .padding(.horizontal)
+
+                Chart {
+                    ForEach(chartData.sorted { $0.credits > $1.credits }) { subject in
+                        SectorMark(
+                            angle: .value("Credits", subject.credits),
+                            innerRadius: .ratio(0.84),
+                            angularInset: 3
+                        )
+                        .cornerRadius(10)
+                        .foregroundStyle(subject.subjectName == "Remaining" ? Color.gray.opacity(0.3) : subject.color)
+                    }
+                }
+                .chartLegend(position: .bottom, alignment: .center, spacing: 20)
+                .chartYScale(domain: 0...Double(viewModel.targetCredits > 0 ? viewModel.targetCredits : 180))
+                .frame(height: 250)
+                .padding(.vertical)
+                .overlay {
+                    VStack(spacing: 4) {
+                        Text("\(completedCredits)")
+                            .font(.system(size: 42, weight: .bold))
+                            .foregroundColor(.primary)
+                        Text("of \(viewModel.targetCredits)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                // Enhanced My Subjects section with refined boxes
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("My Subjects")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Text("\(viewModel.subjects.count) total")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    // Search bar
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                        TextField("Search subjects", text: $searchText)
+                            .textFieldStyle(.plain)
+                    }
+                    .padding(8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                    
+                    // Type filters with larger size
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(subjectTypes, id: \.self) { type in
+                                Button(action: {
+                                    selectedType = selectedType == type ? nil : type
+                                }) {
+                                    Text(type)
+                                        .font(.subheadline)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(selectedType == type ? Color.accentColor : Color(.systemGray6))
+                                        .foregroundColor(selectedType == type ? .white : .primary)
+                                        .clipShape(Capsule())
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 4)
+                    }
+                    
+                    // Refined subject boxes
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 160))], spacing: 16) {
+                        ForEach(filteredSubjects) { subject in
+                            VStack(alignment: .leading, spacing: 12) {
+                                // Top section with color and type
+                                HStack {
+                                    Circle()
+                                        .fill(subject.color)
+                                        .frame(width: 10, height: 10)
+                                    Text(subject.type)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                
+                                // Subject name with more space
+                                Text(subject.subjectName)
+                                    .font(.headline)
+                                    .lineLimit(2)
+                                
+                                // Credits with color emphasis
+                                Text("\(Int(subject.credits)) Credits")
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(subject.color)
+                                
+                                Divider()
+                                    .padding(.vertical, 4)
+                                
+                                // Refined action buttons
+                                HStack(spacing: 16) {
+                                    Spacer()
+                                    
+                                    Button {
+                                        selectedSubject = subject
+                                        isEditing = true
+                                    } label: {
+                                        Image(systemName: "pencil")
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                    
+                                    Button {
+                                        subjectToDelete = subject
+                                        showingDeleteConfirmation = true
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary.opacity(0.8))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.systemBackground))
+                                    .shadow(color: Color.primary.opacity(0.05), radius: 5, x: 0, y: 2)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+                            )
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+                .padding(.horizontal)
             }
-            .listStyle(PlainListStyle())
+            .padding(.vertical)
+        }
+        .background(Color(.systemGroupedBackground))
+        .confirmationDialog(
+            "Delete Subject",
+            isPresented: $showingDeleteConfirmation,
+            presenting: subjectToDelete
+        ) { subject in
+            Button("Delete \(subject.subjectName)", role: .destructive) {
+                if let index = viewModel.subjects.firstIndex(where: { $0.id == subject.id }) {
+                    deleteSubject(at: IndexSet([index]))
+                }
+            }
+        } message: { subject in
+            Text("Are you sure you want to delete this subject? This action cannot be undone.")
         }
     }
 
